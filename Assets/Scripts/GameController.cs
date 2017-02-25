@@ -1,21 +1,23 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+﻿// using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class GameController : MonoBehaviour {
 
-	public List<GameObject> pieces = new List<GameObject>();
+	#region Loaded Resources
+		Material Red;
+		Material Blue;
+		Material Green;
+		Material Yellow;
+		private GameObject floorPrefab; // Reference to the floor prefab
+		private GameObject piecePrefab; // Reference to the game piece prefab
+	#endregion
 
-	
-	Material Red;
-	Material Blue;
-	Material Green;
-	Material Yellow;
-	private GameObject floorPrefab; // Reference to the floor prefab
-	private GameObject piecePrefab; // Reference to the game piece prefab
-	private GameObject[,] floorArray; // 2d array to hold the floor peices
+	#region Create Game pieces managment
+		private GameObject[,] floorArray; // 2d array to hold the floor peices
+	#endregion
 
+	public int gameBoardSize = 7; //doesn't do anything right now
 
 	// Use this for initialization
 	void Start () {
@@ -38,7 +40,7 @@ public class GameController : MonoBehaviour {
 		Yellow = Resources.Load("Materials/Yellow") as Material;
 
 		// initialize teh floor array
-		floorArray = new GameObject[7,7];
+		floorArray = new GameObject[gameBoardSize, gameBoardSize];
 
 		// initialize a parent for the floor pieces
 		GameObject parent = new GameObject();
@@ -46,22 +48,44 @@ public class GameController : MonoBehaviour {
 		parent.name = "floorPiecesParent";
 
 		// now we want to spawn the peices for the floor
-		for(int i = 0; i < 7; i++ ) {
-			for(int j = 0; j < 7; j++ ) {
-				floorArray[i,j] = Instantiate(floorPrefab, new Vector3(i*1.25f - 3.0f*1.25f, 0.0f, j*1.25f - 3.0f*1.25f), Quaternion.identity, parent.transform) as GameObject;
+		for(int i = 0; i < gameBoardSize; i++ ) {
+			for(int j = 0; j < gameBoardSize; j++ ) {
+				floorArray[i,j] = Instantiate(
+						floorPrefab, 
+						new Vector3(
+							i * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f, 
+							0.0f, 
+							j * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f
+						), 
+						Quaternion.identity, 
+						parent.transform
+					) as GameObject;
 			}
 		}
 
 		// now assign to materials to the corner floor pieces
-		floorArray[0,6].GetComponent<MeshRenderer>().material = Green;
-		floorArray[0,0].GetComponent<MeshRenderer>().material = Blue;
-		floorArray[6,0].GetComponent<MeshRenderer>().material = Red;
-		floorArray[6,6].GetComponent<MeshRenderer>().material = Yellow;
+		floorArray[0, gameBoardSize - 1].GetComponent<MeshRenderer>().material = Green;
+		floorArray[0, 0].GetComponent<MeshRenderer>().material = Blue;
+		floorArray[gameBoardSize - 1, 0].GetComponent<MeshRenderer>().material = Red;
+		floorArray[gameBoardSize - 1, gameBoardSize - 1].GetComponent<MeshRenderer>().material = Yellow;
 
 		// Now create the default Pieces and some random blocking pieces
-		pieces.Add(Instantiate(piecePrefab, floorArray[6,0].transform.position, Quaternion.identity) as GameObject);
+		spawn();
 	}
 
+	private void spawn(int x = -1, int y = -1) {
+		if( x == -1 && y == -1) { 
+			for( int i = 0; i < 4; i++ ) {
+				GameObject spawned = Instantiate(piecePrefab, floorArray[(i % 2) * (gameBoardSize - 1), (i / 2) * (gameBoardSize - 1)].transform.position, Quaternion.identity) as GameObject;
+				spawned.GetComponentInChildren<MeshRenderer>().material = floorArray[(i % 2) * (gameBoardSize - 1), (i / 2) * (gameBoardSize - 1)].GetComponent<MeshRenderer>().material;
+				spawned.tag = "team" + (i + 1).ToString();
+			}
+		} else if(x < 0 || x >= gameBoardSize || y < 0 || y >= gameBoardSize)
+			throw new Exception("spawn cords are out of bounds!");
+		else {
+
+		}
+	}
 	
 	// Update is called once per frame
 	void Update () {
@@ -76,5 +100,3 @@ public class GameController : MonoBehaviour {
 		// }
 	}
 }
-
-
