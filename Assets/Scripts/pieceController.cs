@@ -39,6 +39,10 @@ public class pieceController : MonoBehaviour {
 	/// <param name="dir">the direction to move the piece, 0 = Positive Z, 1 = Positive X, 2 = Negative Z, 3 = Negative X</param>
 	/// <returns>boolean if it was able to move</returns>
 	public bool move(int dir = 0) {
+		// TODO: Some bug causes this I need to fix it
+		if( this.gameObject.tag == "dead" )
+			return true;
+
 		int x = this.x;
 		int z = this.z;
 
@@ -53,7 +57,7 @@ public class pieceController : MonoBehaviour {
 
 		pieceController temp = null;
 		gc.store.TryGetValue(new Vector2(x, z).ToString(), out temp);
-		if( temp != null && !(this.x < 0 || this.z < 0 || this.x >= gc.gameBoardSize || this.z >= gc.gameBoardSize) ) {
+		if( temp != null && !(x < 0 || z < 0 || x >= gc.gameBoardSize || z >= gc.gameBoardSize) ) {
 			if( temp.gameObject.tag == "team4" ) return false; // team 4 are the white structures that can't move
 			if( !temp.move(dir) ) return false; // move the other object first
 		}
@@ -74,7 +78,11 @@ public class pieceController : MonoBehaviour {
 		
 		if( this.x < 0 || this.z < 0 || this.x >= gc.gameBoardSize || this.z >= gc.gameBoardSize ) { // the object was pushed out of bounds and needs to die
 			// later add the kill animation here
-			 this.gameObject.tag = "dead"; 
+			int teamTemp = -1;
+			int.TryParse(this.gameObject.tag.Split('m')[1], out teamTemp);
+			gc.reduceLives(teamTemp);
+			this.gameObject.tag = "dead";
+			this.gameObject.GetComponentInChildren<MeshRenderer>().material = gc.getGrey;
 		} else 
 			gc.store.Add(new Vector2(this.x, this.z).ToString(), this);
 

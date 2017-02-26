@@ -10,6 +10,12 @@ public class GameController : MonoBehaviour {
 		Material Blue;
 		Material Green;
 		Material Yellow;
+		Material Grey;
+		public Material getGrey{
+			get{
+				return Grey;
+			}
+		}
 		private GameObject floorPrefab; // Reference to the floor prefab
 		private GameObject piecePrefab; // Reference to the game piece prefab
 	#endregion
@@ -19,11 +25,25 @@ public class GameController : MonoBehaviour {
 		public SortedList<string, pieceController> store;
 	#endregion
 
-	public Text lives;
-	public Text currentTurn;
-	public Text spawnCountDown;
+	#region ui variables
+		private Text lives;
+		private Text currentTurn;
+		private Text spawnCountDown;
+	#endregion
+
+	#region team variables
+		/// <summary>
+		/// The amount of lives a team has left
+		/// </summary>
+		private int[] teamLives;
+		/// <summary>
+		/// Time left till a team spawns a new unit
+		/// </summary>
+		private int[] teamSpawns;
+	#endregion
 
 	public int teamTurnNumber = 0;
+	private int ranUpdate = 0;
 
 	/// <summary>
 	/// The defined board size
@@ -34,6 +54,19 @@ public class GameController : MonoBehaviour {
 	/// Use this for initialization
 	/// </summary>
 	void Start () {
+		GameObject[] uiobjs = GameObject.FindGameObjectsWithTag("ui.text");
+
+		foreach(GameObject obj in uiobjs) {
+			if( obj.gameObject.name == "lives" )
+				lives = obj.GetComponent<Text>();
+			else if( obj.gameObject.name == "currTurn" )
+				currentTurn = obj.GetComponent<Text>();
+			else
+				spawnCountDown = obj.GetComponent<Text>();
+		}
+
+		teamLives = new int[]{5, 5, 5, 5};
+		teamSpawns = new int[]{5, 5, 5, 5};
 	}
 
 	/// <summary>
@@ -51,6 +84,7 @@ public class GameController : MonoBehaviour {
 		Blue = Resources.Load("Materials/Blue") as Material;
 		Green = Resources.Load("Materials/Green") as Material;
 		Yellow = Resources.Load("Materials/Yellow") as Material;
+		Grey = Resources.Load("Materials/Grey") as Material;
 
 		// initialize teh floor array
 		floorArray = new GameObject[gameBoardSize, gameBoardSize];
@@ -142,57 +176,103 @@ public class GameController : MonoBehaviour {
 			// }
 		}
 	}
+
+	public void reduceLives(int team) {
+		teamLives[team] -= 1;
+	}
 	
 	/// <summary>
 	/// Update is called once per frame
 	/// </summary>
 	void Update () {
-		if( teamTurnNumber == 1 ) {
+		if( teamLives[teamTurnNumber] <= 0 ) {
+			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team" + teamTurnNumber.ToString()))
+				obj.GetComponentInChildren<MeshRenderer>().material = getGrey;
+			teamTurnNumber = (teamTurnNumber + 1) % 4;
+		}
+
+		if( teamSpawns[teamTurnNumber] == 0 ) {
+			string query = new Vector2(((teamTurnNumber % 2) * (gameBoardSize - 1)), ((teamTurnNumber / 2) * (gameBoardSize - 1))).ToString();
+			if( !store.Keys.Contains(query) ) {
+				teamSpawns[teamTurnNumber] = teamLives[teamTurnNumber] + 1;
+				this.spawn(teamTurnNumber, (int)(teamTurnNumber % 2) * (gameBoardSize - 1), (int)(teamTurnNumber / 2) * (gameBoardSize - 1));
+			}
+		}
+
+		if( teamTurnNumber == 9 ) {
 			if( Input.GetKeyDown(KeyCode.W) ) {
 				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
 					pieceController pc = obj.GetComponent<pieceController>();
 					pc.move(0);
 				}
+				ranUpdate = 0;
 				teamTurnNumber = (teamTurnNumber + 1) % 4;
 			} else if( Input.GetKeyDown(KeyCode.S) ) {
 				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
 					pieceController pc = obj.GetComponent<pieceController>();
 					pc.move(2);
 				}
+				ranUpdate = 0;
 				teamTurnNumber = (teamTurnNumber + 1) % 4;
 			} else if( Input.GetKeyDown(KeyCode.A) ) {
 				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
 					pieceController pc = obj.GetComponent<pieceController>();
 					pc.move(3);
 				}
+				ranUpdate = 0;
 				teamTurnNumber = (teamTurnNumber + 1) % 4;
 			} else if( Input.GetKeyDown(KeyCode.D) ) {
 				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
 					pieceController pc = obj.GetComponent<pieceController>();
 					pc.move(1);
 				}
+				ranUpdate = 0;
 				teamTurnNumber = (teamTurnNumber + 1) % 4;
 			}
 		} else {
+			ranUpdate = 0;
+			int dir = -1;
+
 			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team" + teamTurnNumber.ToString())) {
 				pieceController pc = obj.GetComponent<pieceController>();
-				Dictionary<int, int> temp = new Dictionary<int, int>();
+				if( dir == -1 ) {
+					Dictionary<int, int> temp = new Dictionary<int, int>();
 
-				if( pc.x != 0 )
-					temp.Add(temp.Count, 3);
-				if( pc.x != gameBoardSize - 1 )
-					temp.Add(temp.Count, 1);
-				if( pc.z != 0 ) 
-					temp.Add(temp.Count, 2);
-				if( pc.z != gameBoardSize - 1 ) 
-					temp.Add(temp.Count, 0);
+					if( pc.x != 0 )
+						temp.Add(temp.Count, 3);
+					if( pc.x != gameBoardSize - 1 )
+						temp.Add(temp.Count, 1);
+					if( pc.z != 0 ) 
+						temp.Add(temp.Count, 2);
+					if( pc.z != gameBoardSize - 1 ) 
+						temp.Add(temp.Count, 0);
 
-				int dir = 0;
-				temp.TryGetValue(Random.Range(0, temp.Count), out dir);
-				pc.move(dir);
+					dir = 0;
+					temp.TryGetValue(Random.Range(0, temp.Count), out dir);
+					pc.move(dir);
+				} else {
+					pc.move(dir);
+				}
 			}
 
-			teamTurnNumber = (teamTurnNumber + 1) % 4;
+			teamTurnNumber = (teamTurnNumber + 1) % 4; //todo: fix this because the team spawns below affects the next team not this team.
+		}
+
+		if( currentTurn.text != "Current turn:" + teamTurnNumber.ToString() ) {
+			currentTurn.text = "Current turn:" + teamTurnNumber.ToString();
+		}
+		
+		if( lives.text != "Lives left: " + teamLives[1].ToString() ) {
+			lives.text = "Lives left: " + teamLives[1].ToString();
+		}
+		
+		if( spawnCountDown.text != "Next Spawn: " + teamSpawns[1].ToString() ) {
+			spawnCountDown.text = "Next Spawn: " + teamSpawns[1].ToString();
+		}
+
+		if( ranUpdate != 1) {
+			ranUpdate = 1;
+			teamSpawns[teamTurnNumber] -= 1;
 		}
 	}
 }
