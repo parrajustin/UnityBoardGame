@@ -147,27 +147,52 @@ public class GameController : MonoBehaviour {
 	/// Update is called once per frame
 	/// </summary>
 	void Update () {
-		if( Input.GetKeyDown(KeyCode.W) ) {
-			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
-				pieceController pc = obj.GetComponent<pieceController>();
-				pc.move(0);
+		if( teamTurnNumber == 1 ) {
+			if( Input.GetKeyDown(KeyCode.W) ) {
+				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
+					pieceController pc = obj.GetComponent<pieceController>();
+					pc.move(0);
+				}
+				teamTurnNumber = (teamTurnNumber + 1) % 4;
+			} else if( Input.GetKeyDown(KeyCode.S) ) {
+				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
+					pieceController pc = obj.GetComponent<pieceController>();
+					pc.move(2);
+				}
+				teamTurnNumber = (teamTurnNumber + 1) % 4;
+			} else if( Input.GetKeyDown(KeyCode.A) ) {
+				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
+					pieceController pc = obj.GetComponent<pieceController>();
+					pc.move(3);
+				}
+				teamTurnNumber = (teamTurnNumber + 1) % 4;
+			} else if( Input.GetKeyDown(KeyCode.D) ) {
+				foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
+					pieceController pc = obj.GetComponent<pieceController>();
+					pc.move(1);
+				}
+				teamTurnNumber = (teamTurnNumber + 1) % 4;
 			}
-		} else if( Input.GetKeyDown(KeyCode.S) ) {
-			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
+		} else {
+			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team" + teamTurnNumber.ToString())) {
 				pieceController pc = obj.GetComponent<pieceController>();
-				pc.move(2);
+				Dictionary<int, int> temp = new Dictionary<int, int>();
+
+				if( pc.x != 0 )
+					temp.Add(temp.Count, 3);
+				if( pc.x != gameBoardSize - 1 )
+					temp.Add(temp.Count, 1);
+				if( pc.z != 0 ) 
+					temp.Add(temp.Count, 2);
+				if( pc.z != gameBoardSize - 1 ) 
+					temp.Add(temp.Count, 0);
+
+				int dir = 0;
+				temp.TryGetValue(Random.Range(0, temp.Count), out dir);
+				pc.move(dir);
 			}
-		} else if( Input.GetKeyDown(KeyCode.A) ) {
-			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
-				pieceController pc = obj.GetComponent<pieceController>();
-				pc.move(3);
-			}
-		} else if( Input.GetKeyDown(KeyCode.D) ) {
-			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
-				pieceController pc = obj.GetComponent<pieceController>();
-				pc.move(1);
-			}
+
+			teamTurnNumber = (teamTurnNumber + 1) % 4;
 		}
-		 
 	}
 }
