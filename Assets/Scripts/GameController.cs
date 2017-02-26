@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
+// using System;
+using UnityEngine.UI;
 
 public class GameController : MonoBehaviour {
 
@@ -15,24 +16,32 @@ public class GameController : MonoBehaviour {
 
 	#region Create Game pieces managment
 		private GameObject[,] floorArray; // 2d array to hold the floor peices
-		public SortedList<int, pieceController> store;
+		public SortedList<string, pieceController> store;
 	#endregion
 
-	public int gameBoardSize = 7; //doesn't do anything right now
+	public Text lives;
+	public Text currentTurn;
+	public Text spawnCountDown;
 
-	// Use this for initialization
+	public int teamTurnNumber = 0;
+
+	/// <summary>
+	/// The defined board size
+	/// </summary>
+	public int gameBoardSize = 7; 
+
+	/// <summary>
+	/// Use this for initialization
+	/// </summary>
 	void Start () {
-		// Vector3 pos = new Vector3((Random.Range(0, 2) == 1? -1.0f: 1.0f) * Random.Range(1, 4) * 1.25f, 0.0f, (Random.Range(0,2) == 1? -1.0f: 1.0f) * Random.Range(1, 4) * 1.25f);
-		// Debug.Log(pos);
-		// other = (GameObject) Instantiate(Resources.Load("Prefab/PieceParent") as GameObject, pos, Quaternion.identity);
-
-		// setUpBoard();
 	}
 
-	// This runs before any start function in any other script
+	/// <summary>
+	/// This runs before any start function in any other script
+	/// </summary>
 	void Awake() {
 		// setup bTree storage
-		store = new SortedList<int, pieceController>();
+		store = new SortedList<string, pieceController>();
 
 		// Load up the prefabs that are used in this game
 		floorPrefab = Resources.Load("Prefab/gameFloor") as GameObject;
@@ -55,15 +64,15 @@ public class GameController : MonoBehaviour {
 		for(int i = 0; i < gameBoardSize; i++ ) {
 			for(int j = 0; j < gameBoardSize; j++ ) {
 				floorArray[i,j] = Instantiate(
-						floorPrefab, 
-						new Vector3(
-							i * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f, 
-							0.0f, 
-							j * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f
-						), 
-						Quaternion.identity, 
-						parent.transform
-					) as GameObject;
+					floorPrefab, 
+					new Vector3(
+						i * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f, 
+						0.0f, 
+						j * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f
+					), 
+					Quaternion.identity, 
+					parent.transform
+				) as GameObject;
 			}
 		}
 
@@ -78,47 +87,65 @@ public class GameController : MonoBehaviour {
 
 		// Spawn some barriers
 		spawn(4, gameBoardSize / 2, gameBoardSize / 2);
-		// spawn(4, gameBoardSize / 2, -1);
+		spawn(4, gameBoardSize / 2, -1);
+		spawn(4, -1, gameBoardSize / 2);
+		spawn(4, gameBoardSize, gameBoardSize / 2);
+		spawn(4, gameBoardSize / 2, gameBoardSize);
 		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
 		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
 		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
 	}
 
 	// Spawn something with a certain Team identifier
-	private void spawn(int team = -1, int x = -1, int y = -1) {
-		if( team == -1) { 
+	private void spawn(int team = -1, int x = -1, int z = -1) {
+		if( team == -1) 
 			for( int i = 0; i < 4; i++ ) {
-				Vector3 temp = floorArray[(i % 2) * (gameBoardSize - 1), (i / 2) * (gameBoardSize - 1)].transform.position;
-
-				GameObject spawned = Instantiate(piecePrefab, temp, Quaternion.identity) as GameObject;
-				spawned.GetComponentInChildren<MeshRenderer>().material = floorArray[(i % 2) * (gameBoardSize - 1), (i / 2) * (gameBoardSize - 1)].GetComponent<MeshRenderer>().material;
-				spawned.tag = "team" + (i).ToString();
-				spawned.name = "team" + (i).ToString();
-
-				pieceController pc = spawned.GetComponent<pieceController>();
-				pc.x = (i % 2) * (gameBoardSize - 1);
-				pc.y = (i / 2) * (gameBoardSize - 1);
-				pc.controller = this;
-
-				store.Add(pc.x * gameBoardSize + pc.y, pc);
-			}
-		} else if(team < 0 || team > 4)
+				this.spawn(i, (int)(i % 2) * (gameBoardSize - 1), (int)(i / 2) * (gameBoardSize - 1));
+			}	
+		else if(team < 0 || team > 4)
 			Debug.LogError("Team Number not correct!");
-		else if( team != -1 && x != -1 && y != -1 ) {
-			GameObject spawned = Instantiate(piecePrefab, floorArray[x, y].transform.position, Quaternion.identity) as GameObject;
+		else {
+			Vector3 pos = new Vector3(
+				(x) * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f, 
+				0.0f, 
+				(z) * 1.25f - ((gameBoardSize - 1) / 2.0f) * 1.25f
+			);
+
+			GameObject spawned = Instantiate(piecePrefab, pos, Quaternion.identity) as GameObject;
 			spawned.tag = "team" + (team).ToString();
 			spawned.name = "team" + (team).ToString();
 
+			switch(team) {
+				case 0:
+					spawned.GetComponentInChildren<MeshRenderer>().material = Blue;
+					break;
+				case 1:
+					spawned.GetComponentInChildren<MeshRenderer>().material = Red;
+					break;
+				case 2:
+					spawned.GetComponentInChildren<MeshRenderer>().material = Green;
+					break;
+				case 3:
+					spawned.GetComponentInChildren<MeshRenderer>().material = Yellow;
+					break;
+			}
+
 			pieceController pc = spawned.GetComponent<pieceController>();
 			pc.x = x;
-			pc.y = y;
+			pc.z = z;
 			pc.controller = this;
 
-			store.Add(pc.x * gameBoardSize + pc.y, pc);
+			// if( pc.x != -1 && pc.y != -1 )
+				store.Add(new Vector2(pc.x, pc.z).ToString(), pc);
+			// else {
+			// 	store.Add()
+			// }
 		}
 	}
 	
-	// Update is called once per frame
+	/// <summary>
+	/// Update is called once per frame
+	/// </summary>
 	void Update () {
 		if( Input.GetKeyDown(KeyCode.W) ) {
 			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team1")) {
@@ -141,5 +168,6 @@ public class GameController : MonoBehaviour {
 				pc.move(1);
 			}
 		}
+		 
 	}
 }
