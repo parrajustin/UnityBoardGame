@@ -18,10 +18,7 @@ public class pieceController : MonoBehaviour {
 				return X;
 			}
 			set {
-				if( value < 0 )
-					X = 0;
-				else
-					X = value;
+				X = value;
 			}
 		}
 		private int Y;
@@ -30,10 +27,7 @@ public class pieceController : MonoBehaviour {
 				return Y;
 			}
 			set {
-				if( value < 0 )
-					Y = 0;
-				else
-					Y = value;
+				Y = value;
 			}
 		}
 	#endregion
@@ -72,8 +66,11 @@ public class pieceController : MonoBehaviour {
 
 		this.x = x;
 		this.y = y;
-
-		gc.store.Add(this.x * gc.gameBoardSize + this.y, this);
+		
+		if( this.x < 0 || this.y < 0 || this.x >= gc.gameBoardSize || this.y >= gc.gameBoardSize ) { // the object was pushed out of bounds and needs to die
+			// later add the kill animation here
+		} else 
+			gc.store.Add(this.x * gc.gameBoardSize + this.y, this);
 
 		return true;
 	}
