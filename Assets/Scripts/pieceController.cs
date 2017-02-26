@@ -21,34 +21,39 @@ public class pieceController : MonoBehaviour {
 				X = value;
 			}
 		}
-		private int Y;
-		public int y {
+		private int Z;
+		public int z {
 			get {
-				return Y;
+				return Z;
 			}
 			set {
-				Y = value;
+				Z = value;
 			}
 		}
 	#endregion
 	
 	/** Move this piece based on the dir, 0 = Positive Y, 1 = Postive X, ...etc */
+	/// <summary>
+	/// Move this piece a certain direction
+	/// </summary>
+	/// <param name="dir">the direction to move the piece, 0 = Positive Z, 1 = Positive X, 2 = Negative Z, 3 = Negative X</param>
+	/// <returns>boolean if it was able to move</returns>
 	public bool move(int dir = 0) {
 		int x = this.x;
-		int y = this.y;
+		int z = this.z;
 
 		if( dir == 0 )
-			y += 1;
+			z += 1;
 		else if( dir == 1 )
 			x += 1;
 		else if( dir == 2 )
-			y -= 1;
+			z -= 1;
 		else
 			x -= 1;
 
 		pieceController temp = null;
-		gc.store.TryGetValue(x * gc.gameBoardSize + y, out temp);
-		if( temp != null && !(this.x < 0 || this.y < 0 || this.x >= gc.gameBoardSize || this.y >= gc.gameBoardSize) ) {
+		gc.store.TryGetValue(new Vector2(x, z).ToString(), out temp);
+		if( temp != null && !(this.x < 0 || this.z < 0 || this.x >= gc.gameBoardSize || this.z >= gc.gameBoardSize) ) {
 			if( temp.gameObject.tag == "team4" ) return false; // team 4 are the white structures that can't move
 			if( !temp.move(dir) ) return false; // move the other object first
 		}
@@ -62,16 +67,16 @@ public class pieceController : MonoBehaviour {
 		else
 			this.transform.Translate(-new Vector3(1.25f, 0.0f, 0.0f));
 
-		gc.store.Remove(this.x * gc.gameBoardSize + this.y);
+		gc.store.Remove(new Vector2(this.x, this.z).ToString());
 
 		this.x = x;
-		this.y = y;
-
-		if( this.x < 0 || this.y < 0 || this.x >= gc.gameBoardSize || this.y >= gc.gameBoardSize ) { // the object was pushed out of bounds and needs to die
-			this.gameObject.tag = "dead";
+		this.z = z;
+		
+		if( this.x < 0 || this.z < 0 || this.x >= gc.gameBoardSize || this.z >= gc.gameBoardSize ) { // the object was pushed out of bounds and needs to die
 			// later add the kill animation here
+			 this.gameObject.tag = "dead"; 
 		} else 
-			gc.store.Add(this.x * gc.gameBoardSize + this.y, this);
+			gc.store.Add(new Vector2(this.x, this.z).ToString(), this);
 
 		return true;
 	}
