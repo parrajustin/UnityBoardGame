@@ -48,7 +48,7 @@ public class pieceController : MonoBehaviour {
 
 		pieceController temp = null;
 		gc.store.TryGetValue(x * gc.gameBoardSize + y, out temp);
-		if( temp != null ) {
+		if( temp != null && !(this.x < 0 || this.y < 0 || this.x >= gc.gameBoardSize || this.y >= gc.gameBoardSize) ) {
 			if( temp.gameObject.tag == "team4" ) return false; // team 4 are the white structures that can't move
 			if( !temp.move(dir) ) return false; // move the other object first
 		}
@@ -66,8 +66,9 @@ public class pieceController : MonoBehaviour {
 
 		this.x = x;
 		this.y = y;
-		
+
 		if( this.x < 0 || this.y < 0 || this.x >= gc.gameBoardSize || this.y >= gc.gameBoardSize ) { // the object was pushed out of bounds and needs to die
+			this.gameObject.tag = "dead";
 			// later add the kill animation here
 		} else 
 			gc.store.Add(this.x * gc.gameBoardSize + this.y, this);
