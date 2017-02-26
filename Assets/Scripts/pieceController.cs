@@ -39,7 +39,7 @@ public class pieceController : MonoBehaviour {
 	#endregion
 	
 	/** Move this piece based on the dir, 0 = Positive Y, 1 = Postive X, ...etc */
-	public void move(int dir = 0) {
+	public bool move(int dir = 0) {
 		int x = this.x;
 		int y = this.y;
 
@@ -55,8 +55,8 @@ public class pieceController : MonoBehaviour {
 		pieceController temp = null;
 		gc.store.TryGetValue(x * gc.gameBoardSize + y, out temp);
 		if( temp != null ) {
-			if( temp.gameObject.tag == "team4" ) return; // team 4 are the white structures that can't move
-			temp.move(dir); // move the other object first
+			if( temp.gameObject.tag == "team4" ) return false; // team 4 are the white structures that can't move
+			if( !temp.move(dir) ) return false; // move the other object first
 		}
 
 		if( dir == 0 )
@@ -75,10 +75,7 @@ public class pieceController : MonoBehaviour {
 
 		gc.store.Add(this.x * gc.gameBoardSize + this.y, this);
 
-		
-				// pc.y = pc.y + 1;
-				// obj.transform.Translate(new Vector3(0.0f, 0.0f, 1.25f));
-				// Debug.Log(store.findK((int) (pc.x * gameBoardSize + pc.y)));
+		return true;
 	}
 
 }
