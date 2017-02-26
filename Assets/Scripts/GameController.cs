@@ -77,9 +77,11 @@ public class GameController : MonoBehaviour {
 		spawn();
 
 		// Spawn some barriers
-		spawn(3, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
-		spawn(3, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
-		spawn(3, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
+		spawn(4, gameBoardSize / 2, gameBoardSize / 2);
+		// spawn(4, gameBoardSize / 2, -1);
+		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
+		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
+		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
 	}
 
 	// Spawn something with a certain Team identifier
