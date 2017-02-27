@@ -10,6 +10,7 @@ TagManager:
   - team0
   - team4
   - dead
+  - ui.text
   layers:
   - Default
   - TransparentFX

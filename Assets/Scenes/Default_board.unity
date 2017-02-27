@@ -118,9 +118,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4df92ce88f7571f41b39dadfbadafb87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lives: {fileID: 0}
-  currentTurn: {fileID: 0}
-  spawnCountDown: {fileID: 0}
   teamTurnNumber: 0
   gameBoardSize: 7
 --- !u!4 &84965407
@@ -360,7 +357,7 @@ GameObject:
   - component: {fileID: 1051873581}
   m_Layer: 5
   m_Name: lives
-  m_TagString: Untagged
+  m_TagString: ui.text
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -434,7 +431,7 @@ GameObject:
   - component: {fileID: 1060627709}
   m_Layer: 5
   m_Name: currTurn
-  m_TagString: Untagged
+  m_TagString: ui.text
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -508,7 +505,7 @@ GameObject:
   - component: {fileID: 1099045574}
   m_Layer: 5
   m_Name: next spawn
-  m_TagString: Untagged
+  m_TagString: ui.text
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
