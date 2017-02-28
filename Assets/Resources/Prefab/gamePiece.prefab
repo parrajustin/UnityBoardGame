@@ -20,6 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4959973596174606}
   - component: {fileID: 114365855901850192}
+  - component: {fileID: 114411805712700034}
   m_Layer: 0
   m_Name: gamePiece
   m_TagString: Untagged
@@ -65,7 +66,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1474307480161696}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.75, y: 0, z: -3.75}
+  m_LocalPosition: {x: -4.763559, y: 1.901804, z: -0.7990608}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4540959377873468}
@@ -133,3 +134,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e000a11e0b6fa5543965332f6332a7f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  X: 0
+  Z: 0
+--- !u!114 &114411805712700034
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1474307480161696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521257714fc9e437a9163df2d37f2ea2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  id: 
+  type: 
+  method: 
+  easeType: 0
+  time: 0
+  delay: 0
+  loopType: 0
+  isRunning: 0
+  isPaused: 0
+  _name: 
