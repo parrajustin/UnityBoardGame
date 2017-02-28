@@ -118,7 +118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4df92ce88f7571f41b39dadfbadafb87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  teamTurnNumber: 0
+  currentTurn: 0
   gameBoardSize: 7
 --- !u!4 &84965407
 Transform:

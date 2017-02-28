@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameController : MonoBehaviour {
-
 	#region Loaded Resources
 		Material Red;
 		Material Blue;
@@ -18,6 +17,7 @@ public class GameController : MonoBehaviour {
 		}
 		private GameObject floorPrefab; // Reference to the floor prefab
 		private GameObject piecePrefab; // Reference to the game piece prefab
+		private GameObject teamPrefab; // Reference to the team prefab
 	#endregion
 
 	#region Create Game pieces managment
@@ -48,6 +48,14 @@ public class GameController : MonoBehaviour {
 		/// Which team went last
 		/// </summary>
 		private int lastTeamTurn;
+		/// <summary>
+		/// References to each team's controller
+		/// </summary>
+		private teamController[] teams;
+		/// <summary>
+		/// Is a team currently taking a turn
+		/// </summary>
+		private bool teamTakingTurn = false;
 	#endregion
 
 	/// <summary>
@@ -118,6 +126,7 @@ public class GameController : MonoBehaviour {
 		// Load up the prefabs that are used in this game
 		floorPrefab = Resources.Load("Prefab/gameFloor") as GameObject;
 		piecePrefab = Resources.Load("Prefab/gamePiece") as GameObject;
+		teamPrefab = Resources.Load("Prefab/teamController") as GameObject;
 		
 		Red = Resources.Load("Materials/Red") as Material;
 		Blue = Resources.Load("Materials/Blue") as Material;
@@ -167,6 +176,17 @@ public class GameController : MonoBehaviour {
 		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
 		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
 		// spawn(4, UnityEngine.Random.Range(1, gameBoardSize-1), UnityEngine.Random.Range(1, gameBoardSize-1));
+
+		// Create team masters
+		teams = new teamController[4];
+		for( int i = 0; i < teams.Length; i++ ) {
+			GameObject temp = Instantiate(teamPrefab, Vector3.zero, Quaternion.identity) as GameObject;
+			teamController t = temp.GetComponent<teamController>();
+
+			teams[i] = t;
+			t.team = i;
+			t.name = "teamController_" + i.ToString();
+		}
 	}
 
 	// Spawn something with a certain Team identifier
@@ -247,19 +267,14 @@ public class GameController : MonoBehaviour {
 	/// Update is called once per frame
 	/// </summary>
 	void Update () {
-		if( true ) {
-			Debug.LogWarning("Update, currentTurn: " + currentTurn.ToString());
-			guiUpdate(); // This updates the gui every update frame
+		guiUpdate(); // This updates the gui every update frame
+
+		if( !teamTakingTurn ) {
+			teamTakingTurn = true;
 
 			int teamTurn; // the team that will be going
 			teamUpdates(out teamTurn); // handles a team spawns and live
-			
-			if( takeTurn(teamTurn) ) {
-				Debug.Log("Update, team " + teamTurn.ToString() + " took their turn");
-				teamSpawnCountDown[teamTurn] -= 1; // Reduce countdown
-				lastTeamTurn = teamTurn; // set this team as the last team to take a turn
-				currentTurn++; // increate the turn counter
-			}
+			takeTurn(teamTurn);
 		}
 
 		// // set this to a team number to allow for player control
@@ -364,9 +379,6 @@ public class GameController : MonoBehaviour {
 	/// <param name="teamNumber">Which team should go</param>
 	private void teamUpdates(out int teamNumber) {
 		int tempTeam = (lastTeamTurn + 1) % 4; // who should be going next
-		Debug.Log("MAX: " + Mathf.Max(teamLives).ToString());
-		if( Mathf.Max(teamLives) <= 0 ) 
-			Debug.Log("ALL TEAMS DEAD");
 
 		// find the team that should go next
 		while( teamLives[tempTeam] <= 0) {
@@ -396,46 +408,18 @@ public class GameController : MonoBehaviour {
 													 // want to change the other code or whatever
 	}
 
+	public void finishedTurn(int teamTurn) {
+		teamSpawnCountDown[teamTurn] -= 1; // Reduce countdown
+		lastTeamTurn = teamTurn; // set this team as the last team to take a turn
+		currentTurn++; // increate the turn counter
+		teamTakingTurn = false;
+	}
+
 	/// <summary>
 	/// This lets a team take a turn whether it is ai or player
 	/// </summary>
 	/// <param name="teamNumber">Which team should go</param>
-	/// <returns>True if a turn was taken</returns>
-	private bool takeTurn(int teamNumber) {
-		bool b;
-		if( true ) { // here we can check if it is a player or ai
-			int dir = -1; // which direction should a team go
-
-			foreach(GameObject obj in GameObject.FindGameObjectsWithTag("team" + teamNumber.ToString())) {
-				pieceController pc = obj.GetComponent<pieceController>();
-				if( dir == -1 ) {
-					int count = 0;
-					int[] temp = new int[]{-1, -1, -1, -1};
-
-					if( pc.x != 0 ) {
-						temp[count] = 3;
-						count++;
-					}
-					if( pc.x != gameBoardSize - 1 ) {
-						temp[count] = 1;
-						count++;
-					}
-					if( pc.z != 0 ) {
-						temp[count] = 2;
-						count++;
-					}
-					if( pc.z != gameBoardSize - 1 ) {
-						temp[count] = 0;
-						count++;
-					}
-
-					dir =  temp[Random.Range(0, count)];
-					b = pc.move(dir);
-				} else 
-					b = pc.move(dir);
-			}
-
-			return true;
-		}
+	private void takeTurn(int teamNumber) {
+		teams[teamNumber].turn();	// tell the team controller that the team needs to take its turn
 	}
 }
