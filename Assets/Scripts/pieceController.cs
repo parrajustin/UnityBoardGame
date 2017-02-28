@@ -6,7 +6,7 @@ using System;
 public class pieceController : MonoBehaviour {
 
 	#region piece variables
-		private Vector3 moveToLocation;
+		public Vector3 moveToLocation;
 		private GameController gc = null;
 		public GameController controller {
 			set {
@@ -57,17 +57,19 @@ public class pieceController : MonoBehaviour {
 	/// <returns>boolean if it was able to move</returns>
 	public bool move(int dir, ref pieceController[] pieces) {
 		pieceController[] piece_array = (pieces != null? pieces : new pieceController[]{});
-		moveToLocation = this.gameObject.transform.position;
 
-		if( lastTurn == gc.currentTurn ) {
-			pieces = null;
+		if( lastTurn == gc.currentTurn ) { // I already took a turn
+			pieces = piece_array;
 			return false;
 		} else
 			lastTurn = gc.currentTurn;
 
+		moveToLocation = this.gameObject.transform.position; // Moved here because it was causing a bug where it was before
+
 		int x = this.x;
 		int z = this.z;
 
+		// set how the piece is gonna move
 		if( dir == 0 )
 			z += 1;
 		else if( dir == 1 )
@@ -82,7 +84,7 @@ public class pieceController : MonoBehaviour {
 			// team 4 are the white structures that can't move
 			// also move the other object first see if it can
 			if( temp.gameObject.tag == "team4" || !temp.move(dir, ref piece_array) ) {
-				pieces = null;
+				pieces = piece_array;
 				return false;
 			}
 		}
@@ -102,7 +104,6 @@ public class pieceController : MonoBehaviour {
 		this.z = z;
 		
 		if( this.x < 0 || this.z < 0 || this.x >= gc.gameBoardSize || this.z >= gc.gameBoardSize ) { // the object was pushed out of bounds and needs to die
-			// later add the kill animation here
 			int teamTemp = -1;
 			if( int.TryParse(this.gameObject.tag.Split('m')[1], out teamTemp) ) 
 				gc.reduceLives(teamTemp); 
@@ -113,7 +114,7 @@ public class pieceController : MonoBehaviour {
 
 		// add this pieceController to the pieceController array so that we can move all the pieces in unison
 		Array.Resize<pieceController>(ref piece_array, piece_array.Length + 1);
-		Array.Copy(new pieceController[]{this}, 0, piece_array, piece_array.Length-1, 1);
+		piece_array[piece_array.Length-1] = this;
 		pieces = piece_array;
 		return true;
 	}
@@ -131,6 +132,7 @@ public class pieceController : MonoBehaviour {
 	/// </summary>
 	public void finishMove() {
 		if( mustDie ) {
+			this.gameObject.tag = "dead";
 			Destroy(this.gameObject);
 		}
 	}

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class GameController : MonoBehaviour {
+
 	#region Loaded Resources
 		Material Red;
 		Material Blue;
