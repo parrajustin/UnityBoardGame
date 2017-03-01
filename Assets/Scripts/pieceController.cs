@@ -133,7 +133,56 @@ public class pieceController : MonoBehaviour {
 	public void finishMove() {
 		if( mustDie ) {
 			this.gameObject.tag = "dead";
-			Destroy(this.gameObject);
+			// Destroy(this.gameObject);
+			 StartCoroutine(explode());
 		}
+	}
+
+	public IEnumerator explode() {
+		Mesh selfMesh = this.gameObject.GetComponentInChildren<MeshFilter>().mesh;
+		Material[] selfMats = this.gameObject.GetComponentInChildren<MeshRenderer>().materials;
+
+		Vector3[] verts = selfMesh.vertices;
+		Vector3[] normals = selfMesh.normals;
+		Vector2[] uvs = selfMesh.uv;
+		for( int subMesh = 0; subMesh < selfMesh.subMeshCount; subMesh++ ) {
+
+			int[] indices = selfMesh.GetTriangles(subMesh);
+
+			for (int i = 0; i < indices.Length; i += 3)    {
+					Vector3[] newVerts = new Vector3[3];
+					Vector3[] newNormals = new Vector3[3];
+					Vector2[] newUvs = new Vector2[3];
+					for (int n = 0; n < 3; n++)    {
+							int index = indices[i + n];
+							newVerts[n] = verts[index];
+							newUvs[n] = uvs[index];
+							newNormals[n] = normals[index];
+					}
+
+					Mesh mesh = new Mesh();
+					mesh.vertices = newVerts;
+					mesh.normals = newNormals;
+					mesh.uv = newUvs;
+					
+					mesh.triangles = new int[] { 0, 1, 2, 2, 1, 0 };
+
+					GameObject GO = new GameObject("Triangle " + (i / 3));
+					// GO.layer = LayerMask.NameToLayer("Particle");
+					GO.transform.position = transform.position;
+					GO.transform.rotation = transform.rotation;
+					GO.AddComponent<MeshRenderer>().material = selfMats[subMesh];
+					GO.AddComponent<MeshFilter>().mesh = mesh;
+					GO.AddComponent<BoxCollider>();
+					Vector3 explosionPos = new Vector3(transform.position.x + UnityEngine.Random.Range(-0.5f, 0.5f), transform.position.y + UnityEngine.Random.Range(0f, 0.5f), transform.position.z + UnityEngine.Random.Range(-0.5f, 0.5f));
+					GO.AddComponent<Rigidbody>().AddExplosionForce(UnityEngine.Random.Range(300,500), explosionPos, 5);
+					Destroy(GO, 5 + UnityEngine.Random.Range(0.0f, 5.0f));
+			}
+		}
+
+		this.gameObject.GetComponentInChildren<Renderer>().enabled = false;
+		
+		yield return new WaitForSeconds(1.0f);
+		Destroy(gameObject);
 	}
 }
